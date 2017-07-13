@@ -182,6 +182,11 @@ a background daemon.
 Instead it runs in the foreground like a regular program.
 This is necessary when you want to run thttpd wrapped in a little shell
 script that restarts it if it exits.
+.TP
+.B -php
+Specifies a path to a php-cgi interpreter.   If specified, files 
+matching "**.php" will be passed to this interpreter.  Experimental.
+The config-file option name for this is "php".
 .SH "CONFIG-FILE"
 .PP
 All the command-line options can also be set in a config file.

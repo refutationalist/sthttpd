@@ -219,7 +219,7 @@ httpd_initialize(
     unsigned short port, char* cgi_pattern, int cgi_limit, char* charset,
     char* p3p, int max_age, char* cwd, int no_log, FILE* logfp,
     int no_symlink_check, int vhost, int global_passwd, char* url_pattern,
-    char* local_pattern, int no_empty_referers )
+    char* local_pattern, int no_empty_referers, char* autophp )
     {
     httpd_server* hs;
     static char ghnbuf[256];
@@ -284,6 +284,20 @@ httpd_initialize(
 	    /* -2 for the offset, +1 for the '\0' */
 	    (void) memmove( cp + 1, cp + 2, strlen( cp ) - 1 );
 	}
+
+
+	if (autophp == (char*) 0) {
+		hs->autophp = (char*) 0;
+	} else {
+		if (access(autophp, X_OK) != -1) {
+			hs->autophp = autophp;
+		} else {
+			syslog(LOG_CRIT, "bad php interpreter");
+			return (httpd_server*) 0;
+		}
+	}
+
+
     hs->cgi_limit = cgi_limit;
     hs->cgi_count = 0;
     hs->charset = strdup( charset );
@@ -3041,6 +3055,20 @@ make_envp( httpd_conn* hc )
     envp[envn++] = build_env(
 	"SCRIPT_NAME=/%s", strcmp( hc->origfilename, "." ) == 0 ?
 	"" : hc->origfilename );
+
+	// Modified from PHP-CGI Support patch (Fanfan <francois@cerbelle.net>)
+	if ( hc->expnfilename[0] == '/' )
+		(void) my_snprintf(buf, sizeof(buf), "%s", strcmp( hc->expnfilename, "." ) == 0 ? "" : hc->expnfilename );
+	else
+		(void) my_snprintf(buf, sizeof(buf), "%s%s", hc->hs->cwd, strcmp( hc->expnfilename, "." ) == 0 ? "" : hc->expnfilename );
+
+
+	envp[envn++] = build_env("SCRIPT_FILENAME=%s", buf);
+	envp[envn++] = build_env("DOCUMENT_ROOT=%s", hc->hs->cwd);
+	envp[envn++] = build_env("REDIRECT_STATUS=%d", "1");
+
+
+
     if ( hc->query[0] != '\0')
 	envp[envn++] = build_env( "QUERY_STRING=%s", hc->query );
     envp[envn++] = build_env(
@@ -3497,6 +3525,9 @@ cgi_child( httpd_conn* hc )
 	    (void) chdir( directory );  /* ignore errors */
 	    }
 	}
+	
+	if ( match( PHP_PATTERN, hc->expnfilename ) && hc->hs->autophp != (char*) 0 )
+		binary = hc->hs->autophp;
 
     /* Default behavior for SIGPIPE. */
 #ifdef HAVE_SIGSET
@@ -3778,10 +3809,20 @@ really_start_request( httpd_conn* hc, struct timeval* nowP )
 	return -1;
 
     /* Is it world-executable and in the CGI area? */
+
+
     if ( hc->hs->cgi_pattern != (char*) 0 &&
 	 ( hc->sb.st_mode & S_IXOTH ) &&
-	 match( hc->hs->cgi_pattern, hc->expnfilename ) )
-	return cgi( hc );
+	 match( hc->hs->cgi_pattern, hc->expnfilename)  ) 
+		return cgi( hc );
+
+	if ( hc->hs->autophp != (char*) 0 &&
+		 match( PHP_PATTERN, hc->expnfilename ) ) 
+		return cgi(hc);
+
+
+
+
 
     /* It's not CGI.  If it's executable or there's pathinfo, someone's
     ** trying to either serve or run a non-CGI file as CGI.   Either case

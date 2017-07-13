@@ -71,6 +71,7 @@ typedef struct {
     char* server_hostname;
     unsigned short port;
     char* cgi_pattern;
+	char* autophp;
     int cgi_limit, cgi_count;
     char* charset;
     char* p3p;
@@ -165,6 +166,9 @@ typedef struct {
 #define CHST_BOGUS 11
 
 
+#define PHP_PATTERN "**.php"
+
+
 /* Initializes.  Does the socket(), bind(), and listen().   Returns an
 ** httpd_server* which includes a socket fd that you can select() on.
 ** Return (httpd_server*) 0 on error.
@@ -174,7 +178,7 @@ extern httpd_server* httpd_initialize(
     unsigned short port, char* cgi_pattern, int cgi_limit, char* charset,
     char* p3p, int max_age, char* cwd, int no_log, FILE* logfp,
     int no_symlink_check, int vhost, int global_passwd, char* url_pattern,
-    char* local_pattern, int no_empty_referers );
+    char* local_pattern, int no_empty_referers, char* autophp );
 
 /* Change the log file. */
 extern void httpd_set_logfp( httpd_server* hs, FILE* logfp );

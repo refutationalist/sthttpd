@@ -83,6 +83,7 @@ static char* user;
 static char* charset;
 static char* p3p;
 static int max_age;
+static char* autophp;
 
 
 typedef struct {
@@ -641,7 +642,7 @@ main( int argc, char** argv )
 	gotv4 ? &sa4 : (httpd_sockaddr*) 0, gotv6 ? &sa6 : (httpd_sockaddr*) 0,
 	port, cgi_pattern, cgi_limit, charset, p3p, max_age, cwd, no_log, logfp,
 	no_symlink_check, do_vhost, do_global_passwd, url_pattern,
-	local_pattern, no_empty_referers );
+	local_pattern, no_empty_referers, autophp );
     if ( hs == (httpd_server*) 0 )
 	exit( 1 );
 
@@ -878,6 +879,7 @@ parse_args( int argc, char** argv )
     user = DEFAULT_USER;
     charset = DEFAULT_CHARSET;
     p3p = "";
+	autophp = AUTOPHP;
     max_age = -1;
     argn = 1;
     while ( argn < argc && argv[argn][0] == '-' )
@@ -931,6 +933,11 @@ parse_args( int argc, char** argv )
 	    ++argn;
 	    cgi_pattern = argv[argn];
 	    }
+	else if ( strcmp( argv[argn], "-php" ) == 0 && argn + 1 < argc )
+		{
+		++argn;
+		autophp = argv[argn];
+		}
 	else if ( strcmp( argv[argn], "-t" ) == 0 && argn + 1 < argc )
 	    {
 	    ++argn;
@@ -989,7 +996,7 @@ static void
 usage( void )
     {
     (void) fprintf( stderr,
-"usage:  %s [-C configfile] [-p port] [-d dir] [-r|-nor] [-dd data_dir] [-s|-nos] [-v|-nov] [-g|-nog] [-u user] [-c cgipat] [-t throttles] [-h host] [-l logfile] [-i pidfile] [-T charset] [-P P3P] [-M maxage] [-V] [-D]\n",
+"usage:  %s [-C configfile] [-p port] [-d dir] [-r|-nor] [-dd data_dir] [-s|-nos] [-v|-nov] [-g|-nog] [-u user] [-c cgipat] [-t throttles] [-h host] [-l logfile] [-i pidfile] [-php php-cgi] [-T charset] [-P P3P] [-M maxage] [-V] [-D]\n",
 	argv0 );
     exit( 1 );
     }
@@ -1172,6 +1179,11 @@ read_config( char* filename )
 		{
 		value_required( name, value );
 		max_age = atoi( value );
+		}
+		else if ( strcasecmp( name, "php" ) == 0 )
+		{
+		value_required( name, value );
+		autophp = e_strdup( value );
 		}
 	    else
 		{
