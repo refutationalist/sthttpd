@@ -2,6 +2,8 @@
 
 This version of sthttpd has support for handing files ending with &asp;&asp;.php to a PHP interpreter, as well as extra junk said CGI interpreter requires.   Not well tested, using on retrocomputing projects.
 
+# Original README
+
 
       sthttpd - a fork of thttpd, a tiny/turbo/throttling HTTP server
                     version 2.27.0 Oct 3, 2014
