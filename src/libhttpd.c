@@ -3102,7 +3102,9 @@ make_envp( httpd_conn* hc )
 	/* We only support Basic auth at the moment. */
     if ( getenv( "TZ" ) != (char*) 0 )
 	envp[envn++] = build_env( "TZ=%s", getenv( "TZ" ) );
-    envp[envn++] = build_env( "CGI_PATTERN=%s", hc->hs->cgi_pattern );
+
+    if ( hc->hs->cgi_pattern != (char*) 0 )
+        envp[envn++] = build_env( "CGI_PATTERN=%s", hc->hs->cgi_pattern );
 
     envp[envn] = (char*) 0;
     return envp;
