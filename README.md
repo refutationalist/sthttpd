@@ -1,6 +1,6 @@
-# EXPERIMENTAL VERSION
+# EXPERIMENTAL VERSION, UNUSED
 
-This version of sthttpd has support for handing files ending with &asp;&asp;.php to a PHP interpreter, as well as extra junk said CGI interpreter requires.   Not well tested, using on retrocomputing projects.
+This version of sthttpd has support for handing files ending with &asp;&asp;.php to a PHP interpreter, as well as extra junk said CGI interpreter requires.   Not well tested, was using on retrocomputing projects.   I have mostly moved on to other web servers.
 
 # Original README
 
